@@ -1,0 +1,16 @@
+###  xcode   ###
+.build
+*.xcodeproj
+DerivedData/
+.DS_Store
+*.xcuserstate  
+project.xcworkspace  
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+.mvn
+mvnw*
+
