@@ -227,7 +227,7 @@ class ViewController: UIViewController {
   }
 
   func removeMessage(index: Int) {
-    UIView.animate(withDuration: 0.2, delay: 0, options: [], animations: {
+    UIView.animate(withDuration: 0.2, delay: 0, options: [UIView.AnimationOptions.transitionFlipFromTop], animations: {
       self.status.center.x += self.view.frame.size.width
     }, completion: { _ in
       self.status.isHidden = true
