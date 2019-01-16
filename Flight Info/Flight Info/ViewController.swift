@@ -78,18 +78,33 @@ class ViewController: UIViewController {
     
     // populate the UI with the next flight's data
     summary.text = data.summary
-    flightNr.text = data.flightNr
-    gateNr.text = data.gateNr
-    departingFrom.text = data.departingFrom
-    arrivingTo.text = data.arrivingTo
-    flightStatus.text = data.flightStatus
 
 
     if animate {
       fade(imageView: bgImageView, toImage: UIImage(named: data.weatherImageName)!, showEffects: data.showWeatherEffects)
+
+      let direction: AnimationDirection = data.isTakingOff ? .positive : .negative
+      cubeTransition(label: flightNr, text: data.flightNr, direction: direction)
+      cubeTransition(label: gateNr, text: data.gateNr, direction: direction)
+
+      // 启程地和目的地Label动画
+      let offsetDeparting = CGPoint(x: CGFloat(direction.rawValue * 80), y: 0.0)
+      moveLabel(label: departingFrom, text: data.departingFrom, offset: offsetDeparting)
+      let offsetArriving = CGPoint(x: 0.0, y: CGFloat(direction.rawValue * 50))
+      moveLabel(label: arrivingTo, text: data.arrivingTo, offset: offsetArriving)
+
+      cubeTransition(label: flightStatus, text: data.flightStatus, direction: direction)
+
     } else {
       bgImageView.image = UIImage(named: data.weatherImageName)!
       snowView.isHidden = !data.showWeatherEffects
+
+      flightNr.text = data.flightNr
+      gateNr.text = data.gateNr
+      departingFrom.text = data.departingFrom
+      arrivingTo.text = data.arrivingTo
+      flightStatus.text = data.flightStatus
+
     }
     
     // schedule next flight
@@ -105,6 +120,66 @@ class ViewController: UIViewController {
 
     UIView.animate(withDuration: 1.0, animations: {
       self.snowView.alpha = showEffects ? 1.0 : 0.0
+    })
+  }
+
+
+  func cubeTransition(label: UILabel, text: String, direction: AnimationDirection) {
+    //创建一个临时的辅助Label,把原来的Label属性复制给这个临时的Label,使用text的新值。
+    let auxLabel = UILabel(frame: label.frame)
+    auxLabel.text = text
+    auxLabel.font = label.font
+    auxLabel.textAlignment = label.textAlignment
+    auxLabel.textColor = label.textColor
+    auxLabel.backgroundColor = label.backgroundColor
+
+    let auxLabelOffset = CGFloat(direction.rawValue) * label.frame.size.height/2.0
+    auxLabel.transform = CGAffineTransform(translationX: 0.0, y: auxLabelOffset).scaledBy(x: 1.0, y: 0.1)
+    label.superview?.addSubview(auxLabel)
+
+    UIView.animate(withDuration: 0.5, delay: 0.0, options: .curveEaseOut, animations: {
+
+      auxLabel.transform = .identity
+      //原来的label在Y轴上反向转换
+      label.transform = CGAffineTransform(translationX: 0.0, y: -auxLabelOffset).scaledBy(x: 1.0, y: 0.1)
+
+
+    }, completion: { _ in
+      //将辅助label的text赋值给label；恢复label的状态；把赋值label移除
+      label.text = auxLabel.text
+      label.transform = .identity
+      auxLabel.removeFromSuperview()
+    })
+
+
+  }
+
+  func moveLabel(label: UILabel, text: String, offset: CGPoint) {
+    let auxLabel = UILabel(frame: label.frame)
+    auxLabel.text = text
+    auxLabel.font = label.font
+    auxLabel.textAlignment = label.textAlignment
+    auxLabel.textColor = label.textColor
+    auxLabel.backgroundColor = label.backgroundColor
+
+    auxLabel.transform = CGAffineTransform(translationX: offset.x, y: offset.y)
+    auxLabel.alpha = 0.0
+    label.superview?.addSubview(auxLabel)
+    //为label添加偏移量转换，和透明度变换
+    UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseIn, animations: {
+      label.transform = CGAffineTransform(translationX: offset.x, y: offset.y)
+      label.alpha = 0.0
+    })
+
+    //为辅助label添加动画，并在动画结束后删除
+    UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseIn, animations: {
+      auxLabel.transform = .identity
+      auxLabel.alpha = 1.0
+    }, completion: { _ in
+      auxLabel.removeFromSuperview()
+      label.text = text
+      label.transform = .identity
+      label.alpha = 1.0
     })
   }
 
